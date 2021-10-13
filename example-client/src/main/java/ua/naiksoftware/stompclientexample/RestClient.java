@@ -6,10 +6,6 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RestClient {
 
-
-    public static final String ANDROID_EMULATOR_LOCALHOST = "10.0.2.2";
-    public static final String SERVER_PORT = "8080";
-
     private static RestClient instance;
     private static final Object lock = new Object();
 
@@ -26,17 +22,17 @@ public class RestClient {
         return instance;
     }
 
-    private final ExampleRepository mExampleRepository;
+    private final IApiService mIApiService;
 
     private RestClient() {
-        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://dev.api.merlyn.org/ws/websocket")
+        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://dev.api.merlyn.org/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build();
-        mExampleRepository = retrofit.create(ExampleRepository.class);
+        mIApiService = retrofit.create(IApiService.class);
     }
 
-    public ExampleRepository getExampleRepository() {
-        return mExampleRepository;
+    public IApiService getIApiService() {
+        return mIApiService;
     }
 }

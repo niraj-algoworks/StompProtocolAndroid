@@ -1,12 +1,12 @@
 package ua.naiksoftware.stompclientexample;
 
 import io.reactivex.Completable;
-import retrofit2.http.POST;
+import retrofit2.http.GET;
 import retrofit2.http.Query;
 
-public interface ExampleRepository {
+public interface IApiService {
 
-    @POST("hello-convert-and-send")
+    @GET("/ws")
     Completable sendRestEcho(@Query("msg") String message);
 
 }

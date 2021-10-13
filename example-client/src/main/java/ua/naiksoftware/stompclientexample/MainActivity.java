@@ -5,47 +5,33 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.gson.Gson;
+
 import io.reactivex.CompletableTransformer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import ua.naiksoftware.stomp.Stomp;
-import ua.naiksoftware.stomp.dto.StompHeader;
 import ua.naiksoftware.stomp.StompClient;
 
-import static ua.naiksoftware.stompclientexample.RestClient.ANDROID_EMULATOR_LOCALHOST;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
 
-    private SimpleAdapter mAdapter;
-    private List<String> mDataSet = new ArrayList<>();
     private StompClient mStompClient;
-    private Gson mGson = new GsonBuilder().create();
     private String url = "wss://dev.api.merlyn.org/ws/websocket";
     private CompositeDisposable compositeDisposable;
-    String json ;
+    private Disposable mRestPingDisposable;
+    private String jsonConfig ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mAdapter = new SimpleAdapter(mDataSet);
-        mAdapter.setHasStableIds(true);
 
         mStompClient = Stomp.over(Stomp.ConnectionProvider.OKHTTP,url);
 
@@ -54,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         configMessage2.setReceiver("DEVICE1");
         configMessage2.setContent("The Content 2");
         Gson gson = new Gson();
-        json = gson.toJson(configMessage2);
+        jsonConfig = gson.toJson(configMessage2);
 
 
         resetSubscriptions();
@@ -112,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
         }else {
             Log.e("result" , " connected ");
         }
-        compositeDisposable.add(mStompClient.send("/app/device.refresh", json)
+        compositeDisposable.add(mStompClient.send("/app/device.refresh", jsonConfig)
                 .compose(applySchedulers())
                 .subscribe(() -> {
                     Log.d(TAG, "STOMP echo send successfully");
@@ -120,6 +106,17 @@ public class MainActivity extends AppCompatActivity {
                     Log.e(TAG, "Error send STOMP echo", throwable);
                     toast(throwable.getMessage());
                 }));
+    }
+
+    public void sendEchoViaRest(View v) {
+        mRestPingDisposable = RestClient.getInstance().getIApiService()
+                .sendRestEcho(jsonConfig)
+                .compose(applySchedulers())
+                .subscribe(() -> Log.d(TAG, "REST echo send successfully"),
+                        throwable -> {
+                            Log.e(TAG, "Error send REST echo", throwable);
+                            MainActivity.this.toast(throwable.getMessage());
+                        });
     }
 
 
@@ -145,7 +142,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         mStompClient.disconnect();
+
         if (compositeDisposable != null) compositeDisposable.dispose();
+        if (mRestPingDisposable != null) mRestPingDisposable.dispose();
         super.onDestroy();
     }
 }

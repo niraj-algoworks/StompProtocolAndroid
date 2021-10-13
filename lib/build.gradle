@@ -54,7 +54,7 @@ android {
             testCoverageEnabled = true
 
             debuggable true
-            signingConfig signingConfigs.test_key
+            signingConfig signingConfigs.release_key
         }
         release {
             minifyEnabled false
@@ -63,7 +63,7 @@ android {
         }
         staging {
             minifyEnabled false
-            signingConfig signingConfigs.test_key
+            signingConfig signingConfigs.release_key
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

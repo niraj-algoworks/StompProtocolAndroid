@@ -23,6 +23,10 @@ android {
     compileSdkVersion 28
     //buildToolsVersion '28.0.3'
 
+    lintOptions {
+        checkReleaseBuilds false
+    }
+
     defaultConfig {
         applicationId "ua.naiksoftware.stompclientexample"
         minSdkVersion 16
@@ -30,10 +34,26 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    signingConfigs {
+        release_key {
+            storeFile = file(getRootDir().toString() + "/keystore/release.keystore")
+            keyAlias = "release"
+            storePassword = "merlyn"
+            keyPassword = "merlyn"
+            v2SigningEnabled true
+            v1SigningEnabled true
+        }
+    }
+
     buildTypes {
+        debug {
+            debuggable true
+            signingConfig signingConfigs.release_key
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release_key
         }
     }
 
